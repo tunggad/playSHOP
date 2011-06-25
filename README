@@ -1,1 +1,7 @@
 playSHOP - The Magento Killer
+
+built on
+- Java + Play! + Japid for superior performance
+- MongoDB for Catalog datas
+- SQL for ACID
+- HTML5 + CSS3
