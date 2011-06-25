@@ -1,0 +1,16 @@
+`import com.mongodb.DBObject;`
+`import com.mongodb.util.JSON;`
+`(  List<DBObject> dtdList )
+<ul>
+  `for DBObject dtd : dtdList
+    <li>
+      <h5 class="hideshowDTD {index:$_index}">${dtd.get("package") + "." + dtd.get("class")}</h5>
+      <p id="json_$_index" class="hide">${JSON.serialize(dtd)}</p>
+      <div class="align_right">
+        <a href="#" class="loadDTD {index:$_index}">load</a> |
+        <a href="#" class="hideshowDTD {index:$_index}">hide/show</a>
+      </div>
+    </li>
+  `
+</ul>
+<script type="text/javascript">alert("hello");</script>

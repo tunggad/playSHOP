@@ -1,0 +1,127 @@
+    `import com.mongodb.DBObject;`
+    `import com.mongodb.util.JSON;`
+
+    #{extends "adminLayout.html" /}
+
+    `(  List<DBObject> dtdList )
+
+
+    #{set title:"playSHOP Dashboard" /}
+
+    `set leftCol
+    <div>left-col</div>
+    `
+
+    `set rightCol
+    <div>
+        <div class="left" style="width: 520px;">
+          <div id="editor"></div>
+
+          `tag ajaxForm id="saveDTDForm",\
+                        beforeSerialize="dtdEditor.save();",\
+                        action="/DTD/save",\
+                        dataType="json", reRender="statusMsg|#statusMsg, dtdList|#dtdListWrapper" |
+              <input id="dtdJSON" type="hidden" name="json" />
+              <input type="submit" value="save" />
+          `
+
+          <div>
+            <a id="setupDTDButton" href="#">Setup DTD Storage</a>
+          </div>
+
+          <div id="statusMsg"></div>
+
+          `tag ajax name="setupDTD", url="/DTD/setup", \
+                    reRender="#statusMsg", \
+                    event="#setupDTDButton"
+        </div>
+
+        <div class="left" style="width: 300px;">
+          <h3>All DTD</h3>
+          <div id="dtdListWrapper">
+            `tag japidviews.backend.DTD._dtdList(dtdList)`
+          </div>
+        </div>
+
+        <div class="clear"></div>
+    </div>
+    `
+
+`set moreScripts
+<script src="/public/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/public/js/ace/theme/theme-vibrant_ink.js" type="text/javascript" charset="utf-8"></script>
+<script src="/public/js/ace/mode/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  var dtdEditor;
+
+	window.onload = function() {
+	    var editor = ace.edit('editor');
+	    editor.setTheme('ace/theme/vibrant_ink');
+	    
+	    var JavaScriptMode = require('ace/mode/javascript').Mode;
+	    editor.getSession().setMode(new JavaScriptMode());
+
+      dtdEditor = new DTDEditor(editor);
+
+      $('.loadDTD').live('click', function() {
+        var index = $(this).metadata().index;
+        var content = $('#json_'+index).text().trim();
+        dtdEditor.load(content);
+      });
+
+      $('.hideshowDTD').live('click', function() {
+        var index = $(this).metadata().index;
+        Utils.blindUpDown($('#json_'+index));
+      });
+	};
+
+  function DTDEditor(aceEditor) {
+    this.aceEditor = aceEditor;
+
+    this.save = function() {
+      $('#dtdJSON').attr('value', this.aceEditor.getSession().getValue());
+    }
+
+    this.load = function(content) {
+      var currDepth = 0;
+      for(var i=0; i<content.length; i++) {
+        var token = '\n';
+
+        if(content.charAt(i) == '{') {
+          currDepth++;
+          for(var j=0; j<currDepth; j++) token += '\t';
+
+          content = content.substring(0, i+1) + token + content.slice(i+1);
+          i += 1 + currDepth;
+        }
+        else if(content.charAt(i) == '}') {
+          currDepth--;
+          for(var j=0; j<currDepth; j++) token += '\t';
+
+          content = content.substring(0, i) + token + content.slice(i);
+          i += 1 + currDepth;
+        }
+        else if(content.charAt(i) == ',') {
+          for(var j=0; j<currDepth; j++) token += '\t';
+
+          content = content.substring(0, i+1) + token + content.slice(i+1);
+          i += 1 + currDepth;
+        }
+      }
+
+      this.aceEditor.getSession().setValue(content);
+    }
+  };
+
+</script>
+`
+
+`set moreStyles
+<style>
+	#editor {
+	    position: relative;
+	    width: 500px;
+	    height: 400px;
+	}
+</style>
+`

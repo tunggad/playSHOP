@@ -1,0 +1,79 @@
+`(  String id, String action, String target, String reRender,
+    @Default("html") String dataType, String beforeSerialize,
+    String beforeSubmit, String success,
+    @Default(true) Boolean clearForm, String cssClass, Boolean onOverlay
+  )
+
+        <form id="${id}" action="${action}" method="post">
+          `doBody`
+        </form>
+
+
+        `String initSnip=null;`
+        
+        `if onOverlay
+          `initSnip = "setTimeout('initAjaxForm_$[id]$()',10);\n\
+            function initAjaxForm_$[id]$()";`
+        `
+        `else initSnip = "$(document).ready(function()";`
+
+
+        `String targetSnip = "";
+        `String dataTypeSnip = "dataType: '$[dataType]$',";`
+        `if( dataType.equals("html") && target != "" ) {
+          `targetSnip = "target: '$[target]$',";`
+          `dataTypeSnip = "";`
+        `}
+
+        `String successSnip = "";
+        `String callbackSnip = "";
+        `if ( dataType.equals("html") ) {
+          `successSnip = "success: htmlSuccess_$[id]$,";`
+          `callbackSnip = "function htmlSuccess_$[id]$ (responseText, statusText, xhr, jqForm) {\n\
+                                var data = responseText;\n\
+                                $[reRenderSnip(reRender, dataType)]$\n\
+                                $[success]$\n\
+          }";`
+
+        `} else if ( dataType.equals("json") ) {
+          `successSnip = "success: jsonSuccess_$[id]$,";`
+          `callbackSnip = "function jsonSuccess_$[id]$ (data) {\n\
+                            $[reRenderSnip(reRender, dataType)]$\n\
+                            $[success]$\n\
+          }";`
+
+        `} else if ( dataType.equals("xml") ) {
+          `successSnip = "success: xmlSuccess_$[id]$,";`
+          `callbackSnip = "function xmlSuccess_$[id]$ (responseXML, statusText, xhr, jqForm) {\n\
+                              $[success]$\n\
+          }";`
+        `}
+
+        `String bindSnip = "$('#$[id]$').ajaxForm(options);";`
+
+        <script type='text/javascript'>
+          ${initSnip} {
+            var options = {
+              ${targetSnip}
+              ${dataTypeSnip}
+              clearForm: $clearForm,
+              beforeSerialize: beforeSerialize_$id,
+              beforeSubmit: beforeSubmit_$id,
+              ${successSnip}
+              cache: false
+            };
+
+            // init ajaxForm plugin
+            ${bindSnip}
+          }${asBoolean(onOverlay) ? "" : ");"}
+
+          function beforeSerialize_$id (jqForm, options) {
+            ${asBoolean(beforeSerialize) ? "return $[beforeSerialize]$" : "return true;"}
+          }
+
+          function beforeSubmit_$id (formData, jqForm, options) {
+            ${asBoolean(beforeSubmit) ? "return $[beforeSubmit]$" : "return true;"}
+          }
+
+          ${callbackSnip}
+        </script>

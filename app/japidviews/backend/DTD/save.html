@@ -1,0 +1,15 @@
+`import com.mongodb.DBObject;
+`json`
+`(  String msg, List<DBObject> dtdList )
+
+  `def _dtdList
+    `tag _dtdList(dtdList)`
+  `
+
+  `def escapedDtdList
+    `String escapsed = escapeJavaScript(_dtdList());`
+    ${escapsed}
+  `
+
+{ "statusMsg" : "<span style='color: #ff0000;'>${msg}</span>",
+  "dtdList" : "${escapedDtdList().trim()}" }

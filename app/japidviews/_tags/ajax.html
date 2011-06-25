@@ -1,0 +1,46 @@
+    `( String name, String url, String type, String data, String reRender,
+        @Default("html") String dataType,
+        String beforeSend, String success, String jsData, Boolean cache, String event
+    )
+
+        `String typeSnip = "GET";`
+        `if type
+          `typeSnip = type;`
+        `
+
+        `String dataSnip = "{}";`
+        `if data
+          `dataSnip = data;`
+        `
+
+        `String mergingParamsSnip = "";`
+        `if jsData
+          `mergingParamsSnip = "Utils.mergeParams( params, $[jsData]$);\n";`
+        `
+
+        <script type="text/javascript">
+            var $name =  function(jsParams_$name) {
+                var params = $dataSnip;
+                ${mergingParamsSnip}
+                if( jsParams_$name ) params = Utils.mergeParams(params, jsParams_$name);
+
+                $.ajax({
+                    type:       '${typeSnip}',
+                    url:        '${url}',
+                    data:       params,
+                    dataType:   '${dataType}',
+
+                    beforeSend: function(jqXHR, settings) {
+                        ${beforeSend}
+                    },
+
+                    success:    function(data, textStatus, jqXHR) {
+                        ${reRenderSnip(reRender, dataType)}
+
+                        ${success}
+                    }
+                });
+            }
+
+            ${eventBindingSnip(event, name+"();", false)}
+        </script>
